@@ -18,7 +18,7 @@ const fileStorage = multer.diskStorage({
     cb(null, 'images');
   },
   filename: (req, file, cb) => {
-    cb(null, uuidv4() + '-' + file.originalname); // הוספת UUID
+    cb(null, uuidv4() + '-' + file.originalname);
   }
 });
 
@@ -70,15 +70,21 @@ mongoose.connect(process.env.MONGODB_URI, {
     w: 'majority',
     j: true
   }
-}
-)
-  .then(result => {
-    console.log('Connected to MongoDB successfully!');
-    app.listen(8080, () => {
-      console.log('Server is running on port 8080');
-    });
-  })
-  .catch(err => {
-    console.log('Error connecting to MongoDB:', err);
+})
+.then(result => {
+  console.log('Connected to MongoDB successfully!');
+  
+  const server = app.listen(8080, () => {
+    console.log('Server is running on port 8080');
   });
+
+  const io = require('./socket').init(server);
+  io.on('connection', socket => {
+    console.log('Client connected');
+  });
+})
+.catch(err => {
+  console.log('Error connecting to MongoDB:', err);
+});
+
 
